@@ -1,5 +1,6 @@
 package com.choewang.kmetrify;
 
+import android.content.Intent;
 import android.os.Bundle;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
@@ -8,6 +9,10 @@ import androidx.appcompat.widget.Toolbar;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.TextView;
+
+import java.time.LocalDate;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -22,10 +27,19 @@ public class MainActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+               Intent intent = new Intent(view.getContext(), AddDayActivity.class);
+               startActivity(intent);
             }
         });
+    }
+
+    @Override
+    public void onResume(){
+        super.onResume();
+        if(getIntent().getExtras() != null && getIntent().getExtras().containsKey("Date")){
+            TextView intro = (TextView) findViewById(R.id.textViewIntroduction);
+            intro.setText(getIntent().getExtras().get("Date").toString());
+        }
     }
 
     @Override
