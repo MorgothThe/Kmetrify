@@ -1,22 +1,27 @@
-package com.choewang.kmetrify;
+package com.choewang.kmetrify.activities;
 
 import android.app.Activity;
 import android.app.DatePickerDialog;
 import android.content.Intent;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteException;
+import android.database.sqlite.SQLiteOpenHelper;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.DatePicker;
 import android.widget.EditText;
+import android.widget.Toast;
+
+import com.choewang.kmetrify.R;
+import com.choewang.kmetrify.persistence.KmetrifyDatabaseHelper;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-
-import javax.microedition.khronos.egl.EGLDisplay;
 
 public class AddDayActivity extends Activity {
     private Date date;
@@ -26,6 +31,8 @@ public class AddDayActivity extends Activity {
     private String finalPlace;
     private int dailyKm;
     private EditText dateInput;
+    private KmetrifyDatabaseHelper dbHelper;
+    private SQLiteDatabase db;
 
     final Calendar myCalendar = Calendar.getInstance();
 
@@ -49,6 +56,14 @@ public class AddDayActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.add_day);
         dateInput = (EditText) findViewById(R.id.editTextDate);
+
+        dbHelper = new KmetrifyDatabaseHelper(this);
+        try{
+            db = dbHelper.getWritableDatabase();
+        }catch(SQLiteException e){
+            Toast toast = Toast.makeText(this, "database is unavailable!",Toast.LENGTH_SHORT);
+            toast.show();
+        }
     }
 
     public void onDateInputClick(View view) {
@@ -75,11 +90,13 @@ public class AddDayActivity extends Activity {
         EditText finale = (EditText) findViewById(R.id.editTextFinal);
         this.finalPlace = finale.getText().toString();
 
+        dbHelper.insertDay(db, this.date, this.meterReading, this.startPlace);
+        db.close();
         Intent intent = new Intent(view.getContext(), MainActivity.class);
-        intent.putExtra("Date", this.date);
-        intent.putExtra("Meter_Reading", this.meterReading);
-        intent.putExtra("Start", this.startPlace);
-        intent.putExtra("Final", this.finalPlace);
+//        intent.putExtra("Date", this.date);
+//        intent.putExtra("Meter_Reading", this.meterReading);
+//        intent.putExtra("Start", this.startPlace);
+//        intent.putExtra("Final", this.finalPlace);
         startActivity(intent);
     }
 }

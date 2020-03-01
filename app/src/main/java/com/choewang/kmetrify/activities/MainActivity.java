@@ -1,20 +1,34 @@
-package com.choewang.kmetrify;
+package com.choewang.kmetrify.activities;
 
 import android.content.Intent;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteException;
+import android.database.sqlite.SQLiteOpenHelper;
 import android.os.Bundle;
+
+import com.choewang.kmetrify.R;
+import com.choewang.kmetrify.activities.AddDayActivity;
+import com.choewang.kmetrify.persistence.KmetrifyDatabaseHelper;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.material.snackbar.Snackbar;
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.CursorAdapter;
+import android.widget.ListView;
+import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
+import android.widget.Toast;
 
-import java.time.LocalDate;
-import java.util.List;
+import org.w3c.dom.Text;
 
 public class MainActivity extends AppCompatActivity {
+    private KmetrifyDatabaseHelper dbHelper;
+    private SQLiteDatabase db;
+    private Cursor daysListCursor;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,15 +45,35 @@ public class MainActivity extends AppCompatActivity {
                startActivity(intent);
             }
         });
+
+        dbHelper = new KmetrifyDatabaseHelper(this);
+        try{
+            db = dbHelper.getReadableDatabase();
+        }catch(SQLiteException e){
+            Toast toast = Toast.makeText(this, "database is unavailable!",Toast.LENGTH_SHORT);
+            toast.show();
+        }
     }
 
     @Override
     public void onResume(){
         super.onResume();
-        if(getIntent().getExtras() != null && getIntent().getExtras().containsKey("Date")){
+//        if(getIntent().getExtras() != null && getIntent().getExtras().containsKey("Date")){
             TextView intro = (TextView) findViewById(R.id.textViewIntroduction);
-            intro.setText(getIntent().getExtras().get("Date").toString());
+            TextView hello = (TextView) findViewById(R.id.textViewWelcome);
+            ListView daysList = (ListView) findViewById(R.id.daysListView);
+//            intro.setText(getIntent().getExtras().get("Date").toString());
+
+        daysListCursor = db.rawQuery("SELECT _id, date FROM DAY", null);
+        CursorAdapter daysAdapter = new SimpleCursorAdapter(MainActivity.this,
+                android.R.layout.simple_list_item_1, daysListCursor, new String[]{"date"}, new int[]{android.R.id.text1});
+        daysList.setAdapter(daysAdapter);
+        if(!daysAdapter.isEmpty()){
+            intro.setVisibility(View.INVISIBLE);
+            hello.setVisibility(View.INVISIBLE);
         }
+            db.close();
+        //}
     }
 
     @Override
